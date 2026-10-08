@@ -31,8 +31,12 @@ jobs:
       - name: Run Docker container
         run: docker run -d -p 3000:3000 --name exsymation-container exsymation-server
 
+      - name: Wait for application to start
+        run: sleep 5
+
       - name: Test deployed application
         run: curl http://localhost:3000
 
       - name: Stop Docker container
+        if: always()
         run: docker stop exsymation-container
