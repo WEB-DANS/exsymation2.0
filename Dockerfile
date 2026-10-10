@@ -1,6 +1,6 @@
 # Alpine for smaller production image.
 # Stage 1: resolve + install prod-only deps from the committed lockfile.
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ COPY server/package.json server/package-lock.json ./
 RUN npm ci --omit=dev
 
 # Stage 2: lean runtime — prod deps + source only, non-root.
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 ENV NODE_ENV=production
