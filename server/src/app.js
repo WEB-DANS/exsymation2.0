@@ -10,6 +10,13 @@ import logger from "./utils/logger.js";
 import { limiter } from "./middlewares/rateLimiter.middleware.js";
 import { notFound, errorHandler } from "./middlewares/error.middleware.js";
 import authRoutes from "./routes/auth.routes.js";
+import teacherRoutes from "./routes/teacher.routes.js";
+import examRoutes from "./routes/exam.routes.js";
+import committeeRoutes from "./routes/committee.routes.js";
+import routineRoutes from "./routes/routine.routes.js";
+import proceedingsRoutes from "./routes/proceedings.routes.js";
+import remunerationRoutes from "./routes/remuneration.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
 
 const app = express();
 
@@ -33,6 +40,13 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/teachers", teacherRoutes);
+app.use("/api/exams", examRoutes);
+app.use("/api/committees", committeeRoutes);
+app.use("/api/routines", routineRoutes);
+app.use("/api/proceedings", proceedingsRoutes);
+app.use("/api/remunerations", remunerationRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Must stay after all routes.
 app.use(notFound);
