@@ -1,0 +1,98 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - release
+  pull_request:
+    branches:
+      - dev
+      - release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install backend dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Audit backend dependencies
+        working-directory: server
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Build frontend
+        working-directory: client
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build backend Docker image
+        run: docker build -t exsymation-server .
+
+      - name: Build frontend Docker image
+        run: docker build -t exsymation-client ./client
+
+      - name: Scan backend image with Trivy (blocking)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: exsymation-server
+          format: table
+          severity: CRITICAL
+          exit-code: "1"
+
+      - name: Scan backend image with Trivy (advisory)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: exsymation-server
+          format: table
+          severity: HIGH
+          exit-code: "0"
+
+  deploy:
+    name: Deploy complete website to Azure
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/release'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure SSH
+        env:
+          AZURE_HOST: ${{ secrets.AZURE_HOST }}
+          AZURE_USER: ${{ secrets.AZURE_USER }}
+          AZURE_SSH_PRIVATE_KEY: ${{ secrets.AZURE_SSH_PRIVATE_KEY }}
+        run: |
+          set -eu
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$AZURE_SSH_PRIVATE_KEY" > ~/.ssh/azure_deploy
+          chmod 600 ~/.ssh/azure_deploy
+          ssh-keyscan -H "$AZURE_HOST" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy complete website to Azure
+        env:
+          AZURE_HOST: ${{ secrets.AZURE_HOST }}
+          AZURE_USER: ${{ secrets.AZURE_USER }}
+        run: |
+          ssh -i ~/.ssh/azure_deploy \
+            "$AZURE_USER@$AZURE_HOST" \
+            'set -eu
+             cd /home/dans/exsymation/exsymation2.0
+             git fetch origin release
+             git reset --hard origin/release
+             docker compose up -d --build
+             docker compose ps -a'
+
+      - name: Clean up SSH key
+        if: always()
+        run: rm -f ~/.ssh/azure_deploy
