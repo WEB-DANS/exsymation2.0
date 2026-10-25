@@ -22,6 +22,18 @@ const committeeCreateSchema = z.object({
   status: z.enum(["active", "inactive"]).optional(),
 });
 
+const committeeUpdateSchema = committeeCreateSchema
+  .partial()
+  .extend({
+    // Explicit null clears an optional slot/external member on update.
+    tabulator1: objectId.nullable().optional(),
+    tabulator2: objectId.nullable().optional(),
+    external: externalSchema.nullable().optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "At least one field is required",
+  });
+
 const chairmanChangeSchema = z.object({
   newTeacherId: objectId,
 });
@@ -42,4 +54,11 @@ const teachersBulkSchema = z.object({
 // Single object OR { teachers: [...] } — supports one or many in one route.
 const teachersCreateUnion = z.union([teacherCreateSchema, teachersBulkSchema]);
 
-export { committeeCreateSchema, chairmanChangeSchema, teacherCreateSchema, teachersBulkSchema, teachersCreateUnion };
+export {
+  committeeCreateSchema,
+  committeeUpdateSchema,
+  chairmanChangeSchema,
+  teacherCreateSchema,
+  teachersBulkSchema,
+  teachersCreateUnion,
+};

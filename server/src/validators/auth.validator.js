@@ -13,6 +13,13 @@ const changePasswordSchema = z.object({
   newPassword: passwordField,
 });
 
+// Teacher flow confirms the account email alongside the old password.
+const teacherChangePasswordSchema = z.object({
+  email: emailField,
+  currentPassword: z.string().min(1).max(72),
+  newPassword: passwordField,
+});
+
 const forgotPasswordSchema = z.object({
   email: emailField,
 });
@@ -39,6 +46,7 @@ const adminLoginSchema = z.object({
 export {
   loginSchema,
   changePasswordSchema,
+  teacherChangePasswordSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   emailRequestSchema,

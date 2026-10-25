@@ -19,7 +19,7 @@ import {
 import validate from "../middlewares/validate.middleware.js";
 import {
   loginSchema,
-  changePasswordSchema,
+  teacherChangePasswordSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
 } from "../validators/auth.validator.js";
@@ -31,7 +31,7 @@ router.post("/refresh", refreshLimiter, csrfCheck, refresh);
 router.delete("/refresh", csrfCheck, logout);
 router.post("/logout", csrfCheck, logout);
 router.post("/logout-all", protectTeacher, logoutAll);
-router.post("/change-password", protectTeacher, validate(changePasswordSchema), changePassword);
+router.post("/change-password", protectTeacher, validate(teacherChangePasswordSchema), changePassword);
 router.post("/forgot-password", authLimiter, validate(forgotPasswordSchema), forgotPassword);
 router.post("/reset-password", authLimiter, validate(resetPasswordSchema), resetPassword);
 
