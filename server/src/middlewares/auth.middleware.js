@@ -70,7 +70,8 @@ async function protectAdmin(req, res, next) {
 
 // Block everything until first-login password is changed.
 // Router-level deny-by-default: mount after protectTeacher, allow-list only
-// change-password (auth router), GET /me (me router) and logout.
+// change-password (auth router), GET /me (me router), GET profile
+// (teacherProfile router) and logout.
 async function requirePasswordChanged(req, res, next) {
   try {
     if (!req.user || req.user.type !== "teacher") return next();

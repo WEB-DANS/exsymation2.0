@@ -12,6 +12,7 @@ import { notFound, errorHandler } from "./middlewares/error.middleware.js";
 import authRoutes from "./routes/auth.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import meRoutes from "./routes/me.routes.js";
+import teacherProfileRoutes from "./routes/teacherProfile.routes.js";
 import chairmanRoutes from "./routes/chairman.routes.js";
 import chairmanCommitteeRoutes from "./routes/chairmanCommittee.routes.js";
 import teacherRoutes from "./routes/teacher.routes.js";
@@ -47,6 +48,8 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+// Mount the profile sub-router before /api/me so its paths are not caught by /:id.
+app.use("/api/me/profile", teacherProfileRoutes);
 app.use("/api/me", meRoutes);
 app.use("/api/chairman/committees", chairmanCommitteeRoutes);
 app.use("/api/chairman", chairmanRoutes);

@@ -10,6 +10,7 @@ import { getRoles } from "../services/roles.service.js";
 import { comparePassword } from "../utils/password.util.js";
 import { newResetToken, sha256 } from "../utils/tokens.js";
 import { decrypt } from "../utils/crypto.util.js";
+import { maskNid } from "../utils/mask.js";
 import { writeAudit } from "../utils/audit.js";
 import logger from "../utils/logger.js";
 
@@ -24,16 +25,11 @@ async function isChairman(viewerId) {
   return Boolean(doc);
 }
 
-function maskNid(value) {
-  if (!value) return null;
-  const s = String(value);
-  if (s.length <= 4) return "***";
-  return `***${s.slice(-4)}`;
-}
-
 async function me(req, res, next) {
   try {
-    const teacher = await Teacher.findById(req.user.sub).select("+nid name email photo status");
+    const teacher = await Teacher.findById(req.user.sub).select(
+      "+nid name email photo status mustChangePassword"
+    );
     if (!teacher || teacher.status !== "active") {
       const err = new Error("Unauthorized");
       err.status = 401;
@@ -55,6 +51,7 @@ async function me(req, res, next) {
       photo: teacher.photo || null,
       nidMasked,
       roles,
+      mustChangePassword: Boolean(teacher.mustChangePassword),
     });
   } catch (err) {
     return next(err);

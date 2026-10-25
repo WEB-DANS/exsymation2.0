@@ -212,11 +212,13 @@ async function logoutAll(req, res, next) {
 
 async function changePassword(req, res, next) {
   try {
-    const { currentPassword, newPassword } = req.body;
+    const { email, currentPassword, newPassword } = req.body;
     const teacher = await Teacher.findById(req.user.sub).select(
-      "+passwordHash status mustChangePassword"
+      "+passwordHash status mustChangePassword email"
     );
     if (!teacher || teacher.status !== "active") return next(invalidCredentials());
+    // The account email is part of the confirmation form.
+    if (teacher.email !== email) return next(invalidCredentials());
 
     const ok = await comparePassword(currentPassword, teacher.passwordHash);
     if (!ok) return next(invalidCredentials());
